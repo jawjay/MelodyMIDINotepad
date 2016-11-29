@@ -21,9 +21,9 @@ class Transcriber {
     
     var samples : [(freq : Double, amp : Double)] = []
     
-    private var tracker : AKFrequencyTracker?
+    fileprivate var tracker : AKFrequencyTracker?
     
-    var timer : NSTimer?
+    var timer : Timer?
     var sampling : Bool = false
     
     // Prepare for a new recording
@@ -33,19 +33,19 @@ class Transcriber {
     }
     
     // Sample current amplitude and frequency of AKFrequencyTracker
-    @objc private func sample() {
+    @objc fileprivate func sample() {
         let sample = (freq: tracker!.frequency, amp: tracker!.amplitude)
         //print(sample) //Uncomment For debugging
         samples.append(sample)
     }
 
-    func startSampling(tracker : AKFrequencyTracker) {
+    func startSampling(_ tracker : AKFrequencyTracker) {
         stopSampling()
         
         self.tracker = tracker
         
-        timer = NSTimer.scheduledTimerWithTimeInterval(
-            1.0 / sampleRate,
+        timer = Timer.scheduledTimer(
+            timeInterval: 1.0 / sampleRate,
             target: self,
             selector: #selector(Transcriber.sample),
             userInfo: nil,
@@ -61,7 +61,7 @@ class Transcriber {
         }
     }
     
-    func extractMelody(tempo tempo: BPM, offset : AKDuration) -> Melody {
+    func extractMelody(tempo: BPM, offset : AKDuration) -> Melody {
         var preliminary : [Note] = []
         
         var index = 0 // Samples since beginning of recording
@@ -125,7 +125,7 @@ class Transcriber {
     
     
     // Private utility for scrubbing out notes that the singer did not likely sing
-    private func scrubNotes(notes : [Note]) -> [Note] {
+    fileprivate func scrubNotes(_ notes : [Note]) -> [Note] {
         return notes.filter({$0.duration >= thresholdDur && $0.value >= thresholdNote && $0.value <= ceilingNote})
     }
     

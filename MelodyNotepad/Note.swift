@@ -21,19 +21,19 @@ class Note : NSObject, NSCoding {
     }
     
     required convenience init?(coder aDecoder: NSCoder) {
-        let value = aDecoder.decodeIntegerForKey("value")
-        let onset = aDecoder.decodeDoubleForKey("onset")
-        let duration = aDecoder.decodeDoubleForKey("duration")
+        let value = aDecoder.decodeInteger(forKey: "value")
+        let onset = aDecoder.decodeDouble(forKey: "onset")
+        let duration = aDecoder.decodeDouble(forKey: "duration")
         
         self.init(value: value,
                   onset: onset,
                   duration: duration)
     }
     
-    func encodeWithCoder(aCoder: NSCoder) {
-        aCoder.encodeInteger(value, forKey: "value")
-        aCoder.encodeDouble(onset, forKey: "onset")
-        aCoder.encodeDouble(duration, forKey: "duration")
+    func encode(with aCoder: NSCoder) {
+        aCoder.encode(value, forKey: "value")
+        aCoder.encode(onset, forKey: "onset")
+        aCoder.encode(duration, forKey: "duration")
     }
     
     

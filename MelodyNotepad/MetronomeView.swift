@@ -11,18 +11,18 @@ import AudioKit
 
 class MetronomeView: UIView {
     
-    let unlitColor : UIColor = UIColor.whiteColor()
-    let litColor : UIColor = UIColor.greenColor()
+    let unlitColor : UIColor = UIColor.white
+    let litColor : UIColor = UIColor.green
     
-    let resetTime : NSTimeInterval = 0.1
+    let resetTime : TimeInterval = 0.1
     
     var lit : Bool = false
     var running : Bool = false
     
-    var pulseTimer : NSTimer? = nil
-    var relaxTimer : NSTimer? = nil
+    var pulseTimer : Timer? = nil
+    var relaxTimer : Timer? = nil
     
-    var pulseInterval : NSTimeInterval = 0.5 // 120 BPM -> 0.5 seconds per beat
+    var pulseInterval : TimeInterval = 0.5 // 120 BPM -> 0.5 seconds per beat
     
     var tempo : BPM {
         get {
@@ -33,7 +33,7 @@ class MetronomeView: UIView {
         }
     }
 
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         (lit ? litColor : unlitColor).set()
         UIRectFill(rect)
     }
@@ -42,15 +42,15 @@ class MetronomeView: UIView {
         lit = true
         setNeedsDisplay()
         relaxTimer?.invalidate()
-        relaxTimer = NSTimer.scheduledTimerWithTimeInterval(
-            resetTime,
+        relaxTimer = Timer.scheduledTimer(
+            timeInterval: resetTime,
             target: self,
             selector: #selector(MetronomeView.relax),
             userInfo: nil,
             repeats: false)
     }
     
-    @objc private func relax() {
+    @objc fileprivate func relax() {
         lit = false
         setNeedsDisplay()
     }
@@ -58,8 +58,8 @@ class MetronomeView: UIView {
     func switchOn() {
         pulseTimer?.invalidate()
         pulse()
-        pulseTimer = NSTimer.scheduledTimerWithTimeInterval(
-            pulseInterval,
+        pulseTimer = Timer.scheduledTimer(
+            timeInterval: pulseInterval,
             target: self,
             selector: #selector(MetronomeView.pulse),
             userInfo: nil,

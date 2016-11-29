@@ -17,8 +17,8 @@ class Melody : NSObject, NSCoding {
     
     // MARK: Archiving Paths
     // Use these paths for saving/loading melodies
-    static let DocumentsDirectory = NSFileManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask).first!
-    static let ArchiveURL = DocumentsDirectory.URLByAppendingPathComponent("melodies")
+    static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
+    static let ArchiveURL = DocumentsDirectory.appendingPathComponent("melodies")
     
     
     init(notes : [Note] = [], tempo: Double = 120, name: String? = nil) {
@@ -37,25 +37,25 @@ class Melody : NSObject, NSCoding {
         var notes : [Note] = []
         
         
-        var iterator: MusicEventIterator = nil
-        NewMusicEventIterator(track.internalMusicTrack, &iterator)
+        var iterator: MusicEventIterator? = nil
+        NewMusicEventIterator(track.internalMusicTrack!, &iterator)
         
         var eventTime = MusicTimeStamp(0)
         var eventType = MusicEventType()
-        var eventData: UnsafePointer<Void> = nil
+        var eventData: UnsafeMutablePointer<Void>
         var eventDataSize: UInt32 = 0
         var hasNextEvent: DarwinBoolean = false
         
         
-        MusicEventIteratorHasCurrentEvent(iterator, &hasNextEvent)
-        
-        while(hasNextEvent) {
-            MusicEventIteratorGetEventInfo(iterator, &eventTime, &eventType, &eventData, &eventDataSize)
+        MusicEventIteratorHasCurrentEvent(iterator!, &hasNextEvent)
+        /*
+        while(hasNextEvent.boolValue) {
+            MusicEventIteratorGetEventInfo(iterator!, &eventTime, &eventType, &eventData, &eventDataSize)
             
             if eventType == kMusicEventType_MIDINoteMessage {
-                let data = UnsafePointer<MIDINoteMessage>(eventData)
-                let note = data.memory.note
-                let dur = data.memory.duration
+                let data = eventData.unsafelyUnwrapped 
+                let note = data.pointee
+                let dur = data.pointee.duration
                 
                 notes.append(Note(
                     value: MIDINoteNumber(note),
@@ -63,31 +63,31 @@ class Melody : NSObject, NSCoding {
                     duration: Double(dur)
                     ))
             }
-        }
+        }*/
         
         self.init(notes: notes, tempo: tempo)
     }
     
     required convenience init?(coder aDecoder: NSCoder) {
-        guard let notes = aDecoder.decodeObjectForKey("notes") as? [Note] else {
+        guard let notes = aDecoder.decodeObject(forKey: "notes") as? [Note] else {
             return nil
         }
-        let tempo = aDecoder.decodeDoubleForKey("tempo")
-        let name = aDecoder.decodeObjectForKey("name") as? String
+        let tempo = aDecoder.decodeDouble(forKey: "tempo")
+        let name = aDecoder.decodeObject(forKey: "name") as? String
 
         self.init(notes: notes, tempo: tempo,name:name)
     }
     
    
-    func encodeWithCoder(aCoder: NSCoder) {
-        aCoder.encodeObject(notes, forKey: "notes")
-        aCoder.encodeDouble(tempo, forKey: "tempo")
-        aCoder.encodeObject(name, forKey: "name")
+    func encode(with aCoder: NSCoder) {
+        aCoder.encode(notes, forKey: "notes")
+        aCoder.encode(tempo, forKey: "tempo")
+        aCoder.encode(name, forKey: "name")
     }
     
     
     
-    func copyToTrack(track : AKMusicTrack) {
+    func copyToTrack(_ track : AKMusicTrack) {
         for note in notes {
             track.add(noteNumber: note.value,
                      velocity: 127,
@@ -109,9 +109,9 @@ class Melody : NSObject, NSCoding {
         return AKDuration(beats: latestNoteOff, tempo: tempo)
     }
     
-    func join(melody : Melody) {
-        self.notes.appendContentsOf(melody.notes)
-        self.notes.sortInPlace({return $0.0.onset < $0.1.onset})
+    func join(_ melody : Melody) {
+        self.notes.append(contentsOf: melody.notes)
+        self.notes.sort(by: {return $0.0.onset < $0.1.onset})
     }
     
     class func defaultMelody() -> Melody {
@@ -132,9 +132,9 @@ class Melody : NSObject, NSCoding {
     }
     
     class func generateDateString() -> String {
-        let date = NSDate()
-        let calendar = NSCalendar.currentCalendar()
-        let comp = calendar.components([.Year,.Month,.Hour,.Minute], fromDate: date)
+        let date = Date()
+        let calendar = Calendar.current
+        let comp = (calendar as NSCalendar).components([.year,.month,.hour,.minute], from: date)
 
         return "\(comp.month)/\(comp.year)/\(comp.hour):\(comp.minute)"
     }

@@ -12,7 +12,7 @@ import AudioKit
 
 
 protocol SettingsDelegate {
-    func settingsDidChange(ampVal: Float, durVal: Float,widthVal:Float,heightVal:Float)
+    func settingsDidChange(_ ampVal: Float, durVal: Float,widthVal:Float,heightVal:Float)
 }
 private extension Selector {
     static let popToRoot = #selector(SettingsController.popToRoot(_:))
@@ -32,7 +32,7 @@ class SettingsController: UIViewController{
     
     @IBOutlet weak var ampSlider: UISlider!
     @IBOutlet weak var ampValLabel: UILabel!
-    @IBAction func ampValChanged(sender: UISlider) {
+    @IBAction func ampValChanged(_ sender: UISlider) {
         
         ampValLabel.text = String(Double(round(1000*ampSlider.value)/1000))
     }
@@ -43,12 +43,12 @@ class SettingsController: UIViewController{
     
     @IBOutlet weak var durSlider: UISlider!
     @IBOutlet weak var durValLabel: UILabel!
-    @IBAction func durValChanged(sender: UISlider) {
+    @IBAction func durValChanged(_ sender: UISlider) {
         durValLabel.text =  String(Double(round(1000*durSlider.value)/1000))
     }
     
-    @IBAction func customSwitchFlip(sender: AnyObject) {
-        defaults.setBool(customSwitch.on, forKey: "switchState")
+    @IBAction func customSwitchFlip(_ sender: AnyObject) {
+        defaults.set(customSwitch.isOn, forKey: "switchState")
         setSliders()
     }
     
@@ -57,7 +57,7 @@ class SettingsController: UIViewController{
 
     @IBOutlet weak var domValLabel: UILabel!
     
-    @IBAction func widthValChanged(sender: UISlider) {
+    @IBAction func widthValChanged(_ sender: UISlider) {
         domValLabel.text =  String(Int(widthSlider.value))
     }
     
@@ -65,28 +65,28 @@ class SettingsController: UIViewController{
     
     @IBOutlet weak var rangeValLabel: UILabel!
     
-    @IBAction func heightValChanged(sender: UISlider) {
+    @IBAction func heightValChanged(_ sender: UISlider) {
         rangeValLabel.text = String(Int(heightSlider.value))
     }
 
     
-    let defaults = NSUserDefaults.standardUserDefaults()
+    let defaults = UserDefaults.standard
     
     
     var delegate: SettingsDelegate?
     
-    func popToRoot(sender:UIBarButtonItem){
-        self.navigationController!.popToRootViewControllerAnimated(true)
+    func popToRoot(_ sender:UIBarButtonItem){
+        self.navigationController!.popToRootViewController(animated: true)
         if let mydelegate = self.delegate {
             mydelegate.settingsDidChange(ampSlider.value,durVal: durSlider.value,widthVal: widthSlider.value,heightVal: heightSlider.value)
         }
     }
     
-    func setCustomBackButton(title: String){
-        let myBackButton:UIButton = UIButton(type: .Custom)
-        myBackButton.addTarget(self, action: .popToRoot, forControlEvents: UIControlEvents.TouchUpInside)
-        myBackButton.setTitle(title, forState: UIControlState.Normal)
-        myBackButton.setTitleColor(UIColor.blueColor(), forState: UIControlState.Normal)
+    func setCustomBackButton(_ title: String){
+        let myBackButton:UIButton = UIButton(type: .custom)
+        myBackButton.addTarget(self, action: .popToRoot, for: UIControlEvents.touchUpInside)
+        myBackButton.setTitle(title, for: UIControlState())
+        myBackButton.setTitleColor(UIColor.blue, for: UIControlState())
         myBackButton.sizeToFit()
         let myCustomBackButtonItem:UIBarButtonItem = UIBarButtonItem(customView: myBackButton)
         self.navigationItem.leftBarButtonItem  = myCustomBackButtonItem
@@ -100,7 +100,7 @@ class SettingsController: UIViewController{
     }
     
     func setSwitch(){
-        customSwitch.on = defaults.boolForKey("switchState")
+        customSwitch.isOn = defaults.bool(forKey: "switchState")
     }
     
     func setSliders(){
@@ -109,11 +109,11 @@ class SettingsController: UIViewController{
         var domVal = SettingsController.beatwidthDefault
         var rangeVal = SettingsController.noteHeightDefault
         
-        if defaults.boolForKey("switchState") {     // check switch state
-             ampVal = defaults.floatForKey("ampVal")
-             durVal = defaults.floatForKey("durVal")
-             domVal = defaults.floatForKey("domVal")
-             rangeVal = defaults.floatForKey("rangeVal")
+        if defaults.bool(forKey: "switchState") {     // check switch state
+             ampVal = defaults.float(forKey: "ampVal")
+             durVal = defaults.float(forKey: "durVal")
+             domVal = defaults.float(forKey: "domVal")
+             rangeVal = defaults.float(forKey: "rangeVal")
 
         }
         ampSlider.value = ampVal
@@ -126,18 +126,18 @@ class SettingsController: UIViewController{
         domValLabel.text =  String(Int(widthSlider.value))
         
     }
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         setSwitch()
         setSliders()
         
         
         
     }
-    override func viewWillDisappear(animated: Bool) {
-        defaults.setFloat(ampSlider.value, forKey: "ampVal")
-        defaults.setFloat(durSlider.value, forKey: "durVal")
-        defaults.setFloat(widthSlider.value, forKey: "domVal")
-        defaults.setFloat(heightSlider.value, forKey: "rangeVal")
+    override func viewWillDisappear(_ animated: Bool) {
+        defaults.set(ampSlider.value, forKey: "ampVal")
+        defaults.set(durSlider.value, forKey: "durVal")
+        defaults.set(widthSlider.value, forKey: "domVal")
+        defaults.set(heightSlider.value, forKey: "rangeVal")
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

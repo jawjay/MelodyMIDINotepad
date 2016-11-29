@@ -15,7 +15,7 @@ class MIDIScrollView: UIScrollView {
     override init(frame: CGRect) {
         
         self.midiView = MIDIView(frame: CGRect(x: frame.width / 2, y: 0.0, width: 800, height: 1280))
-        self.midiView.backgroundColor = UIColor.whiteColor()
+        self.midiView.backgroundColor = UIColor.white
         
         self.playheadIndicator = PlayheadIndicator(frame: self.midiView.frame)
         
@@ -29,14 +29,14 @@ class MIDIScrollView: UIScrollView {
     
     required init?(coder aDecoder: NSCoder) {
         self.midiView = MIDIView(frame: CGRect(x: 0.0, y: 0.0, width: 800, height: 1280))
-        self.midiView.backgroundColor = UIColor.whiteColor()
+        self.midiView.backgroundColor = UIColor.white
         
         self.playheadIndicator = PlayheadIndicator(frame: CGRect(x: 0.0, y: 0.0, width: 800, height: 1280))
         
         super.init(coder: aDecoder)
         self.canCancelContentTouches = false
         
-        self.midiView.frame.offsetInPlace(dx: frame.midX, dy: 0)
+        self.midiView.frame.offsetBy(dx: frame.midX, dy: 0)
         self.addSubview(midiView)
         self.addSubview(playheadIndicator)
         
@@ -53,7 +53,7 @@ class MIDIScrollView: UIScrollView {
         self.contentSize.width += self.frame.width
     }
     
-    func openMelody(melody : Melody) {
+    func openMelody(_ melody : Melody) {
         midiView.openMelody(melody)
         midiView.sizeToFit()
         playheadIndicator.frame = midiView.frame
@@ -64,7 +64,7 @@ class MIDIScrollView: UIScrollView {
         self.setContentOffset(CGPoint(x: 0, y: midiView.noteHeight*30), animated: false)
     }
     
-    func moveToBeat(beats : Double) {
+    func moveToBeat(_ beats : Double) {
         let x = midiView.xFromBeats(beats)
         playheadIndicator.x = x
         playheadIndicator.setNeedsDisplay()
@@ -77,7 +77,7 @@ class MIDIScrollView: UIScrollView {
         
     }
     
-    func setOffset(x : CGFloat) {
+    func setOffset(_ x : CGFloat) {
         self.midiView.frame = CGRect(origin: CGPoint(x: x, y: 0), size: self.midiView.frame.size)
         playheadIndicator.frame = self.midiView.frame
     }
@@ -87,15 +87,15 @@ class MIDIScrollView: UIScrollView {
 class PlayheadIndicator : UIView {
     
     var x : CGFloat = 0
-    var color : UIColor = UIColor.yellowColor()
+    var color : UIColor = UIColor.yellow
     
     override init(frame : CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = UIColor.clearColor()
-        self.userInteractionEnabled = false
+        self.backgroundColor = UIColor.clear
+        self.isUserInteractionEnabled = false
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         let indicator = UIBezierPath()
         let x : CGFloat
         
@@ -107,8 +107,8 @@ class PlayheadIndicator : UIView {
             x = self.x
         }
         
-        indicator.moveToPoint(CGPoint(x: x, y: rect.minY))
-        indicator.addLineToPoint(CGPoint(x: x, y: rect.maxY))
+        indicator.move(to: CGPoint(x: x, y: rect.minY))
+        indicator.addLine(to: CGPoint(x: x, y: rect.maxY))
         
         color.setStroke()
         indicator.stroke()

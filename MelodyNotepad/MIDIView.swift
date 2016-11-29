@@ -16,23 +16,23 @@ class MIDIView: UIView {
     
     let minimumDisplayWidth : CGFloat = 500
     
-    let noteFill = UIColor.redColor()
-    let selectedFill = UIColor.orangeColor()
+    let noteFill = UIColor.red
+    let selectedFill = UIColor.orange
 
-    let gridStroke = UIColor.grayColor() //Color of gridlines
-    let rowFill = UIColor.lightGrayColor() //Color of pitch rows of black keys
+    let gridStroke = UIColor.gray //Color of gridlines
+    let rowFill = UIColor.lightGray //Color of pitch rows of black keys
 
     // Currently opened melody
     var melody : Melody? = nil
     
     // See NoteBox class below
-    private var boxes : [NoteBox] = []
+    fileprivate var boxes : [NoteBox] = []
     
     // Editing variables
-    private var selectedBox : NoteBox? = nil
-    private var boxOp : NoteOperation = .Translate
-    private var dx : CGFloat = 0
-    private var dy : CGFloat = 0
+    fileprivate var selectedBox : NoteBox? = nil
+    fileprivate var boxOp : NoteOperation = .translate
+    fileprivate var dx : CGFloat = 0
+    fileprivate var dy : CGFloat = 0
     
     let boxHandleRatio : CGFloat = 0.15 // What fraction of note box is a "stretch note" handle....
     let boxHandleMax : CGFloat = 10  // ....unless its wider than this (impose restraint)
@@ -42,11 +42,11 @@ class MIDIView: UIView {
     var shortestNote = 0.0625 // 1/16 of a beat (1/64 note)
     
     var playhead : AKDuration? = nil
-    var playheadColor = UIColor.yellowColor()
+    var playheadColor = UIColor.yellow
     
     
     //Internal class used to maintain relationship between Note objects and their on-screen represenation
-    private class NoteBox {
+    fileprivate class NoteBox {
         var note : Note
         var rect : CGRect
         
@@ -58,25 +58,25 @@ class MIDIView: UIView {
     }
     
     //Enumeration for editing operations
-    private enum NoteOperation {
-        case Translate, StretchLeft, StretchRight
+    fileprivate enum NoteOperation {
+        case translate, stretchLeft, stretchRight
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         //Draw gridlines
         
         let grid = UIBezierPath()
         
         //Beat dividers
-        ceil(rect.minX / beatWidth).stride(to: rect.maxX, by: beatWidth).forEach(
+        stride(from: ceil(rect.minX / beatWidth), to: rect.maxX, by: beatWidth).forEach(
             { x in
-                grid.moveToPoint(CGPoint(x: x, y: rect.minY))
-                grid.addLineToPoint(CGPoint(x: x, y: rect.maxY))
+                grid.move(to: CGPoint(x: x, y: rect.minY))
+                grid.addLine(to: CGPoint(x: x, y: rect.maxY))
             }
         )
         
         //Grey bars for black keys, gridlines (between E and F) and (between B and C)
-        ceil(rect.minY / noteHeight).stride(to: rect.maxY, by: noteHeight).forEach(
+        stride(from: ceil(rect.minY / noteHeight), to: rect.maxY, by: noteHeight).forEach(
             { y in
                 let key = (127 - Int(y / noteHeight)) % 12
                 if MIDIView.blackKeysInLowestOctave.contains(key) {
@@ -85,8 +85,8 @@ class MIDIView: UIView {
                     UIRectFill(CGRect(x: rect.minX, y: y, width: rect.width, height: noteHeight))
                 } else if key == 4 || key == 11 {
                     //E and B
-                    grid.moveToPoint(CGPoint(x: rect.minX, y: y))
-                    grid.addLineToPoint(CGPoint(x: rect.maxX, y: y))
+                    grid.move(to: CGPoint(x: rect.minX, y: y))
+                    grid.addLine(to: CGPoint(x: rect.maxX, y: y))
                 }
             }
         )
@@ -112,8 +112,8 @@ class MIDIView: UIView {
             if rect.contains(CGPoint(x: x, y: rect.midY)) {
                 let indicator = UIBezierPath()
             
-                indicator.moveToPoint(CGPoint(x: x, y: rect.minY))
-                indicator.addLineToPoint(CGPoint(x: x, y: rect.maxY))
+                indicator.move(to: CGPoint(x: x, y: rect.minY))
+                indicator.addLine(to: CGPoint(x: x, y: rect.maxY))
                 
                 playheadColor.setStroke()
                 indicator.stroke()
@@ -131,14 +131,14 @@ class MIDIView: UIView {
         // Worth having two separate loops in case boxes and melody get out of sync
         for i in 0..<melody.notes.count {
             if melody.notes[i] === selectedBox.note {
-                melody.notes.removeAtIndex(i)
+                melody.notes.remove(at: i)
                 break
             }
         }
         
         for j in 0..<boxes.count {
             if boxes[j] === selectedBox {
-                boxes.removeAtIndex(j)
+                boxes.remove(at: j)
                 break
             }
         }
@@ -149,7 +149,7 @@ class MIDIView: UIView {
     }
     
     //Display a melody
-    func openMelody(melody : Melody) {
+    func openMelody(_ melody : Melody) {
         self.melody = melody
         sizeToFit()
         refresh()
@@ -171,7 +171,7 @@ class MIDIView: UIView {
     
     // Utilities for converting between notes and rectangles
     
-    private func boxFromNote(note : Note) -> NoteBox {
+    fileprivate func boxFromNote(_ note : Note) -> NoteBox {
         return NoteBox(
             note: note,
             rect: rectFromNote(note)
@@ -179,7 +179,7 @@ class MIDIView: UIView {
         
     }
     
-    private func rectFromNote(note : Note) -> CGRect {
+    fileprivate func rectFromNote(_ note : Note) -> CGRect {
         return CGRect(
             x: xFromBeats(note.onset),
             y: yFromPitch(note.value),
@@ -188,19 +188,19 @@ class MIDIView: UIView {
         )
     }
     
-    func beatsFromX(x : CGFloat) -> Double {
+    func beatsFromX(_ x : CGFloat) -> Double {
         return Double(x / beatWidth)
     }
     
-    func xFromBeats(beats : Double) -> CGFloat {
+    func xFromBeats(_ beats : Double) -> CGFloat {
         return beatWidth * CGFloat(beats)
     }
     
-    func pitchFromY(y : CGFloat) -> MIDINoteNumber {
+    func pitchFromY(_ y : CGFloat) -> MIDINoteNumber {
         return (127 - Int(y / noteHeight))
     }
     
-    func yFromPitch(pitch : MIDINoteNumber) -> CGFloat {
+    func yFromPitch(_ pitch : MIDINoteNumber) -> CGFloat {
         return noteHeight * CGFloat(127 - pitch)
     }
     
@@ -214,7 +214,7 @@ class MIDIView: UIView {
         }
     }
     
-    override func hitTest(point: CGPoint, withEvent event: UIEvent?) -> UIView? {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         for box in boxes {
             if box.rect.contains(point) {
                 return self // 'Note box was struck, so I'll handle this touch'
@@ -224,8 +224,8 @@ class MIDIView: UIView {
         return nil // 'No note boxes hit, so my superview should handle it'
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        let point = touches.first!.locationInView(self)
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let point = touches.first!.location(in: self)
         
         /* Could probably do this part in HitTest so checking each box doesn't have to happen twice,
          but I'm not sure if HitTest always getting called immediately before the corresponding touchesBegan is a guarantee */
@@ -238,12 +238,12 @@ class MIDIView: UIView {
                 
                 let handleSize = min(box.rect.width * boxHandleRatio, boxHandleMax)
                 
-                if box.rect.divide(handleSize, fromEdge: CGRectEdge.MinXEdge).slice.contains(point) {
-                    boxOp = .StretchLeft
-                } else if box.rect.divide(handleSize, fromEdge: CGRectEdge.MaxXEdge).slice.contains(point) {
-                    boxOp = .StretchRight
+                if box.rect.divided(atDistance: handleSize, from: CGRectEdge.minXEdge).slice.contains(point) {
+                    boxOp = .stretchLeft
+                } else if box.rect.divided(atDistance: handleSize, from: CGRectEdge.maxXEdge).slice.contains(point) {
+                    boxOp = .stretchRight
                 } else {
-                    boxOp = .Translate
+                    boxOp = .translate
                 }
                 self.setNeedsDisplay()
                 return
@@ -251,14 +251,14 @@ class MIDIView: UIView {
         }
     }
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let box = selectedBox else {
             return
         }
         
         let touch = touches.first!
-        let current = touch.locationInView(self)
-        let previous = touch.previousLocationInView(self)
+        let current = touch.location(in: self)
+        let previous = touch.previousLocation(in: self)
         
         // Add touch's movement to running totals, passed INOUT to note manipulating functions
         // Which may or may not clear them depending on the validity of the note manipulation
@@ -267,16 +267,16 @@ class MIDIView: UIView {
         dy += current.y - previous.y
         
         switch (boxOp) {
-        case .Translate:
+        case .translate:
             translate(box, dx: &dx, dy: &dy)
-        case .StretchLeft:
+        case .stretchLeft:
             stretchLeft(box, dx: &dx)
-        case .StretchRight:
+        case .stretchRight:
             stretchRight(box, dx: &dx)
         }
     }
     
-    private func translate(box : NoteBox, inout dx : CGFloat, inout dy : CGFloat) {
+    fileprivate func translate(_ box : NoteBox, dx : inout CGFloat, dy : inout CGFloat) {
         let dBeats = beatsFromX(dx)
         
         //Are you attempting to move the note before 0 time?
@@ -298,7 +298,7 @@ class MIDIView: UIView {
         } else {
             // Otherwise, move note as usual
             box.note.onset += dBeats
-            box.rect.offsetInPlace(dx: dx, dy: 0)
+            box.rect.offsetBy(dx: dx, dy: 0)
             dx = 0
         }
         
@@ -310,7 +310,7 @@ class MIDIView: UIView {
             
             //Change pitch, move box
             box.note.value += change
-            box.rect.offsetInPlace(dx: 0.0, dy: -noteHeight * CGFloat(change))
+            box.rect.offsetBy(dx: 0.0, dy: -noteHeight * CGFloat(change))
             
             //Leave "unused" risidual portion of y (ensures that note will remain beneath the finger)
             dy += CGFloat(change) * noteHeight
@@ -319,7 +319,7 @@ class MIDIView: UIView {
         setNeedsDisplay()
     }
     
-    private func stretchRight(box : NoteBox, inout dx: CGFloat ) {
+    fileprivate func stretchRight(_ box : NoteBox, dx: inout CGFloat ) {
         
         //Make change in note length
         box.note.duration += beatsFromX(dx)
@@ -344,7 +344,7 @@ class MIDIView: UIView {
         setNeedsDisplay()
     }
     
-    private func stretchLeft(box : NoteBox, inout dx: CGFloat ) {
+    fileprivate func stretchLeft(_ box : NoteBox, dx: inout CGFloat ) {
         //See stretchRight for explanation
         
         let dDur = beatsFromX(dx)

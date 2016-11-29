@@ -22,10 +22,10 @@ class AudioProcessor {
     
     let transcriber = Transcriber()
     
-    var status : AudioStatus = .Idle
+    var status : AudioStatus = .idle
     
     enum AudioStatus {
-        case Idle, Record, Playback
+        case idle, record, playback
     }
     
     // Melody to record to/play back
@@ -34,7 +34,7 @@ class AudioProcessor {
     var offset : AKDuration = AKDuration(beats: 0) // Set to playhead at beginning of recording session
     
     // Timer responsible for stopping playback when end of melody is reached
-    var autostop : NSTimer?
+    var autostop : Timer?
     
     //Callback functions
     var stopPlaybackCallback : (() -> ())? = nil
@@ -71,7 +71,7 @@ class AudioProcessor {
     }
     
     // Clears sequencer's first track and copies melody into it, returns boolean indicating success
-    private func loadMelodyIntoSequencer() -> Bool {
+    fileprivate func loadMelodyIntoSequencer() -> Bool {
         guard let melody = self.melody else { return false }
         
         sequencer.tracks.first!.clear()
@@ -88,11 +88,11 @@ class AudioProcessor {
     
     func startRecording() {
         switch status {
-        case .Playback:
+        case .playback:
             stopPlayback()
-        case .Record:
+        case .record:
             return
-        case .Idle:
+        case .idle:
             break
         }
 
@@ -102,19 +102,19 @@ class AudioProcessor {
         transcriber.startSampling(tracker)
         
         AudioKit.output = silence
-        status = .Record
+        status = .record
         AudioKit.start()
 
     }
     
     
     func stopRecording() {
-        guard status == .Record else { return }
+        guard status == .record else { return }
         
         // Stop recording process
         transcriber.stopSampling()
         AudioKit.stop()
-        status = .Idle
+        status = .idle
         
         if melody != nil {
             melody!.join(transcriber.extractMelody(tempo: melody!.tempo, offset: offset))
@@ -129,11 +129,11 @@ class AudioProcessor {
     
     func startPlayback() {
         switch status {
-        case .Playback:
+        case .playback:
             return
-        case .Record:
+        case .record:
             stopRecording()
-        case .Idle:
+        case .idle:
             break
         }
         
@@ -155,18 +155,18 @@ class AudioProcessor {
         // Schedule an automatic stop when the melody ends
         scheduleAutostop()
         
-        status = .Playback
+        status = .playback
         //print("started playback")
     }
     
     func stopPlayback() {
-        guard status == .Playback else { return }
+        guard status == .playback else { return }
         
         cancelAutostop()
         
         sequencer.stop()
         AudioKit.stop()
-        status = .Idle
+        status = .idle
         
         stopPlaybackCallback?()
         //print("stopped playback")
@@ -174,7 +174,7 @@ class AudioProcessor {
     
     // AUTOSTOP //
     
-    @objc private func doAutostop() {
+    @objc fileprivate func doAutostop() {
         stopPlayback()
         sequencer.rewind()
     }
@@ -186,8 +186,8 @@ class AudioProcessor {
         let interval = (endtime - playhead).seconds
         
         if interval > 0 {
-            autostop = NSTimer.scheduledTimerWithTimeInterval(
-                interval,
+            autostop = Timer.scheduledTimer(
+                timeInterval: interval,
                 target: self,
                 selector: #selector(AudioProcessor.doAutostop),
                 userInfo: nil,
